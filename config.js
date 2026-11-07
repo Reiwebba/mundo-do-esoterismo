@@ -1,12 +1,8 @@
-/*
-  CONFIGURAÇÃO PÚBLICA DO SUPABASE
-  Preenche com o Project URL e a Publishable Key do teu projeto.
-  Nunca coloques aqui uma Secret Key ou service_role key.
-*/
 window.APP_CONFIG = {
-  SUPABASE_URL: "COLOCA_AQUI_O_PROJECT_URL",
-  SUPABASE_PUBLISHABLE_KEY: "COLOCA_AQUI_A_PUBLISHABLE_KEY",
-  WHATSAPP_NUMBER: "244900000000", // Substitui pelo teu número com indicativo, sem + ou espaços.
-  CURRENCY: "USD", // Altera para AOA se os preços forem em kwanzas.
+  SUPABASE_URL: "https://okfurxlebqewmurqtlde.supabase.co/rest/v1/",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_SCDDJ-RyQK5q6bQeh0hRZQ_a5b_kGhP"                                                                                                                                                                                                              ",
+  WHATSAPP_NUMBER: "+244955920372", //
+  CURRENCY: "USD", //
   STORE_NAME: "Mundo do Esoterismo"
+SUPPORTED_CURRENCIES:["EUR", "BRL", "GBP"]
 };
