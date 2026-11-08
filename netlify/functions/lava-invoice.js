@@ -27,7 +27,7 @@ export default async (request) => {
     }
 
     const response = await fetch(
-      "https://gate.lava.top/api/v2/invoices",
+      "https://gate.lava.top/api/v3/invoice",
       {
         method: "POST",
         headers: {
