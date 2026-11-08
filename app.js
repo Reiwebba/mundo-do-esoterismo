@@ -249,15 +249,14 @@
 
     const product = cart[0];
 
-    const currencies = ["USD", "EUR", "RUB"];
-
     showModal(`
       <h2>Finalizar compra</h2>
 
       <p>${escapeHTML(product.name)}</p>
 
-      <form id="paymentForm">
+      <p><b>Preço: ${money(product.price, product.currency)}</b></p>
 
+      <form id="paymentForm">
         <label>
           O teu email
           <input
@@ -269,27 +268,9 @@
           >
         </label>
 
-        <label>
-          Moeda de pagamento
-          <select class="form-control" name="currency">
-            ${currencies.map(currency => `
-              <option
-                value="${currency}"
-                ${currency === selectedCurrency ? "selected" : ""}>
-                ${currency}
-              </option>
-            `).join("")}
-          </select>
-        </label>
-
-        <p id="paymentPrice">
-          Preço: ${money(product.price, product.currency)}
-        </p>
-
         <button class="gold-button" type="submit">
           Criar pagamento
         </button>
-
       </form>
 
       <p>Depois da criação do pagamento, serás encaminhado para a página segura da Lava.top.</p>
@@ -299,8 +280,7 @@
       e.preventDefault();
 
       const form = new FormData(e.target);
-      const email = form.get("email");
-      const currency = form.get("currency");
+      const email = String(form.get("email") || "").trim();
 
       const button = e.target.querySelector("button[type='submit']");
       button.disabled = true;
@@ -317,7 +297,9 @@
             body: JSON.stringify({
               email,
               offerId: product.offerId,
-              currency
+              currency: product.currency,
+              productName: product.name,
+              amount: product.price
             })
           }
         );
@@ -342,15 +324,6 @@
         button.disabled = false;
         button.textContent = "Tentar novamente";
       }
-    };
-
-    $("#paymentForm").querySelector(
-      '[name="currency"]'
-    ).onchange = e => {
-      const currency = e.target.value;
-      const price = product.price;
-      $("#paymentPrice").textContent =
-        `Preço apresentado: ${money(price, product.currency)}. A moeda seleccionada será enviada à Lava.top.`;
     };
   }
 
@@ -526,7 +499,8 @@
 
       <p>
         Os produtos públicos são geridos na Lava.top.
-        Esta área mantém a gestão das encomendas existentes no Supabase.
+        Esta área permite consultar as encomendas registadas no Supabase.
+        Os pagamentos são confirmados automaticamente pelo webhook da Lava.top.
       </p>
 
       <h3>Encomendas</h3>
@@ -538,11 +512,6 @@
             · ${money(o.total, o.currency)}
             · ${escapeHTML(o.status)}
           </p>
-
-          ${o.status !== "paid"
-            ? `<button class="small-button" data-paid="${o.id}">Marcar como paga</button>`
-            : ""
-          }
         </div>
       `).join("") || "<p>Sem encomendas.</p>"}
 
@@ -552,22 +521,6 @@
 
       <button class="small-button" id="backAccount">Voltar à conta</button>
     `);
-
-    document.querySelectorAll("[data-paid]").forEach(b => {
-      b.onclick = async () => {
-        const { error } = await supabaseClient
-          .from("orders")
-          .update({ status: "paid" })
-          .eq("id", b.dataset.paid);
-
-        if (error) {
-          toast(error.message);
-        } else {
-          toast("Encomenda actualizada.");
-          adminPanel();
-        }
-      };
-    });
 
     $("#backAccount").onclick = accountPanel;
   }
