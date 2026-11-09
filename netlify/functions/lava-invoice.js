@@ -1,3 +1,4 @@
+
 export default async (request) => {
   const respond = (data, status = 200) =>
     new Response(JSON.stringify(data), {
@@ -20,6 +21,7 @@ export default async (request) => {
 
   if (!apiKey || !supabaseUrl || !serviceKey) {
     console.error("Configuração incompleta.");
+
     return respond(
       { error: "Configuração incompleta no servidor" },
       500
@@ -35,14 +37,21 @@ export default async (request) => {
       amount
     } = await request.json();
 
+    const normalizedEmail = String(email || "").trim();
+    const normalizedOfferId = String(offerId || "").trim();
+    const normalizedCurrency = String(currency || "").trim().toUpperCase();
+    const normalizedProductName = String(productName || "").trim();
+    const normalizedAmount = Number(amount);
+
+    const supportedCurrencies = ["USD", "EUR", "RUB"];
+
     if (
-      !email ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      !offerId ||
-      !currency ||
-      !productName ||
-      !Number.isFinite(Number(amount)) ||
-      Number(amount) <= 0
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) ||
+      !normalizedOfferId ||
+      !supportedCurrencies.includes(normalizedCurrency) ||
+      !normalizedProductName ||
+      !Number.isFinite(normalizedAmount) ||
+      normalizedAmount <= 0
     ) {
       return respond(
         { error: "Dados de pagamento inválidos ou incompletos" },
@@ -61,9 +70,9 @@ export default async (request) => {
           "X-Api-Key": apiKey
         },
         body: JSON.stringify({
-          email: String(email).trim(),
-          offerId: String(offerId),
-          currency: String(currency)
+          email: normalizedEmail,
+          offerId: normalizedOfferId,
+          currency: normalizedCurrency
         })
       }
     );
@@ -74,6 +83,7 @@ export default async (request) => {
       data = await lavaResponse.json();
     } catch {
       console.error("Resposta inválida da Lava.top.");
+
       return respond(
         { error: "Resposta inválida do serviço de pagamento" },
         502
@@ -83,7 +93,8 @@ export default async (request) => {
     if (!lavaResponse.ok) {
       console.error(
         "A Lava.top recusou a criação da fatura:",
-        lavaResponse.status
+        lavaResponse.status,
+        data
       );
 
       return respond(
@@ -119,8 +130,10 @@ export default async (request) => {
     }
 
     // Guardar encomenda no Supabase
+    const cleanSupabaseUrl = supabaseUrl.replace(/\/+$/, "");
+
     const orderResponse = await fetch(
-      `${supabaseUrl}/rest/v1/orders`,
+      `${cleanSupabaseUrl}/rest/v1/orders`,
       {
         method: "POST",
         headers: {
@@ -130,12 +143,12 @@ export default async (request) => {
           "Prefer": "return=representation"
         },
         body: JSON.stringify({
-          buyer_email: String(email).trim(),
+          buyer_email: normalizedEmail,
           lava_invoice_id: String(invoiceId),
-          lava_offer_id: String(offerId),
-          product_name: String(productName),
-          total: Number(amount),
-          currency: String(currency),
+          lava_offer_id: normalizedOfferId,
+          product_name: normalizedProductName,
+          total: normalizedAmount,
+          currency: normalizedCurrency,
           status: "pending"
         })
       }
@@ -151,7 +164,9 @@ export default async (request) => {
       );
 
       return respond(
-        { error: "A fatura foi criada, mas não foi possível registar a encomenda" },
+        {
+          error: "A fatura foi criada, mas não foi possível registar a encomenda"
+        },
         500
       );
     }
@@ -162,7 +177,10 @@ export default async (request) => {
     });
 
   } catch (error) {
-    console.error("Erro interno ao criar pagamento.");
+    console.error(
+      "Erro interno ao criar pagamento:",
+      error?.message || error
+    );
 
     return respond(
       { error: "Erro interno ao processar o pagamento" },
