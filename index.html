@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt">
 <head>
@@ -16,11 +17,17 @@
 </head>
 <body>
   <div class="announcement">CONHECIMENTO • AUTOCONHECIMENTO • DESENVOLVIMENTO INTERIOR</div>
+
   <header class="site-header">
-    <a class="brand" href="#inicio"><span class="brand-mark">✧</span><span>MUNDO <b>DO ESOTERISMO</b><small>Conhecimento para a jornada interior</small></span></a>
+    <a class="brand" href="#inicio">
+      <span class="brand-mark">✧</span>
+      <span>MUNDO <b>DO ESOTERISMO</b><small>Conhecimento para a jornada interior</small></span>
+    </a>
     <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
     <nav id="mainNav">
-      <a href="#inicio">Início</a><a href="#catalogo">Produtos</a><a href="#sobre">Sobre</a>
+      <a href="#inicio">Início</a>
+      <a href="#catalogo">Produtos</a>
+      <a href="#sobre">Sobre</a>
       <button class="nav-button" id="accountButton">Minha conta</button>
       <button class="nav-button cart-button" id="cartButton">Carrinho <span id="cartCount">0</span></button>
     </nav>
@@ -48,13 +55,29 @@
         <h2>Conhecimento ao teu alcance</h2>
         <p>Escolhe um tema e começa a tua próxima leitura.</p>
       </div>
+
       <div class="catalog-tools">
-        <input id="searchInput" type="search" placeholder="Pesquisar ebooks, cursos e vídeos..." aria-label="Pesquisar produtos">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Pesquisar ebooks, cursos e vídeos..."
+          aria-label="Pesquisar produtos"
+        >
+
+        <select id="currencyFilter" aria-label="Selecionar moeda">
+          <option value="USD" selected>USD — Dólar americano</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="RUB">RUB — Rublo russo</option>
+        </select>
+
         <select id="categoryFilter" aria-label="Filtrar por categoria">
           <option value="">Todas as categorias</option>
-          <option value="Ebook">Ebooks</option><option value="Curso">Cursos</option><option value="Vídeo">Vídeos</option>
+          <option value="Ebook">Ebooks</option>
+          <option value="Curso">Cursos</option>
+          <option value="Vídeo">Vídeos</option>
         </select>
       </div>
+
       <div id="productGrid" class="product-grid">
         <div class="empty-state">A carregar a coleção...</div>
       </div>
@@ -62,18 +85,26 @@
 
     <section class="about-section" id="sobre">
       <div class="about-symbol">☼</div>
-      <div><p class="eyebrow">A NOSSA ESSÊNCIA</p><h2>Aprender é também uma jornada.</h2>
-      <p>O Mundo do Esoterismo é uma loja independente de conteúdos digitais. Reunimos materiais educativos sobre tradições esotéricas, meditação, simbolismo e desenvolvimento pessoal. Explore com curiosidade e espírito crítico.</p></div>
+      <div>
+        <p class="eyebrow">A NOSSA ESSÊNCIA</p>
+        <h2>Aprender é também uma jornada.</h2>
+        <p>O Mundo do Esoterismo é uma loja independente de conteúdos digitais. Reunimos materiais educativos sobre tradições esotéricas, meditação, simbolismo e desenvolvimento pessoal. Explore com curiosidade e espírito crítico.</p>
+      </div>
     </section>
 
     <section class="contact-section">
-      <p class="eyebrow">PRECISAS DE AJUDA?</p><h2>Estamos aqui para ajudar.</h2>
+      <p class="eyebrow">PRECISAS DE AJUDA?</p>
+      <h2>Estamos aqui para ajudar.</h2>
       <p>Fala connosco pelo WhatsApp para esclarecer dúvidas sobre produtos e encomendas.</p>
       <a class="gold-button" id="whatsappLink" href="#" target="_blank" rel="noopener">Contactar pelo WhatsApp ↗</a>
     </section>
   </main>
 
-  <footer><a class="footer-brand" href="#inicio">✧ MUNDO DO ESOTERISMO</a><p>© <span id="year"></span> Mundo do Esoterismo. Todos os direitos reservados.</p><small>Os conteúdos são educativos e não substituem aconselhamento médico, psicológico, jurídico ou financeiro.</small></footer>
+  <footer>
+    <a class="footer-brand" href="#inicio">✧ MUNDO DO ESOTERISMO</a>
+    <p>© <span id="year"></span> Mundo do Esoterismo. Todos os direitos reservados.</p>
+    <small>Os conteúdos são educativos e não substituem aconselhamento médico, psicológico, jurídico ou financeiro.</small>
+  </footer>
 
   <div class="modal-backdrop" id="modalBackdrop" hidden>
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -81,6 +112,7 @@
       <div id="modalContent"></div>
     </section>
   </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
