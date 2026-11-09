@@ -84,12 +84,16 @@
   function getProductData(item) {
     const product = item.data || item;
     const offer = product.offers?.[0];
-    const prices = offer?.prices || [];
 
-    const price =
-      prices.find(p => p.currency === selectedCurrency) ||
-      prices.find(p => p.currency === "USD") ||
-      prices[0];
+    const prices = (offer?.prices || [])
+      .map(price => ({
+        amount: Number(price.amount),
+        currency: String(price.currency || "").toUpperCase()
+      }))
+      .filter(price =>
+        Number.isFinite(price.amount) &&
+        ["USD", "EUR", "RUB"].includes(price.currency)
+      );
 
     return {
       id: product.id,
@@ -100,9 +104,14 @@
         offer?.description ||
         "Conteúdo digital disponível na nossa loja.",
       type: "Ebook",
-      price: Number(price?.amount || 0),
-      currency: price?.currency || "USD"
+      prices
     };
+  }
+
+  function getSelectedPrice(product) {
+    return product.prices?.find(
+      price => price.currency === selectedCurrency
+    ) || null;
   }
 
   function renderProducts() {
@@ -115,36 +124,45 @@
     );
 
     $("#productGrid").innerHTML = list.length
-      ? list.map(p => `
-        <article class="product-card">
-          <div class="product-art">
-            ${icons[p.type] || "✧"}
-          </div>
+      ? list.map(p => {
+        const price = getSelectedPrice(p);
 
-          <div class="product-info">
-            <span class="product-type">
-              ${escapeHTML(p.type || "Digital")}
-            </span>
-
-            <h3>${escapeHTML(p.name)}</h3>
-
-            <p>${escapeHTML(
-              p.description ||
-              "Conteúdo digital disponível na nossa loja."
-            )}</p>
-
-            <div class="product-bottom">
-              <span class="price">${money(p.price, p.currency)}</span>
-
-              <button
-                class="small-button"
-                data-add="${escapeHTML(p.id)}">
-                Comprar
-              </button>
+        return `
+          <article class="product-card">
+            <div class="product-art">
+              ${icons[p.type] || "✧"}
             </div>
-          </div>
-        </article>
-      `).join("")
+
+            <div class="product-info">
+              <span class="product-type">
+                ${escapeHTML(p.type || "Digital")}
+              </span>
+
+              <h3>${escapeHTML(p.name)}</h3>
+
+              <p>${escapeHTML(
+                p.description ||
+                "Conteúdo digital disponível na nossa loja."
+              )}</p>
+
+              <div class="product-bottom">
+                <span class="price">${
+                  price
+                    ? money(price.amount, selectedCurrency)
+                    : `Indisponível em ${escapeHTML(selectedCurrency)}`
+                }</span>
+
+                <button
+                  class="small-button"
+                  data-add="${escapeHTML(p.id)}"
+                  ${price ? "" : "disabled"}>
+                  Comprar
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("")
       : '<div class="empty-state">Ainda não há produtos publicados nesta categoria.</div>';
   }
 
@@ -194,12 +212,24 @@
 
     if (!product) return;
 
+    const selectedPrice = getSelectedPrice(product);
+
+    if (!selectedPrice) {
+      toast(`Este produto não está disponível em ${selectedCurrency}.`);
+      return;
+    }
+
     if (cart.length && String(cart[0].id) !== String(id)) {
       toast("Compra um produto de cada vez, por favor.");
       return;
     }
 
-    cart = [product];
+    cart = [{
+      ...product,
+      price: selectedPrice.amount,
+      currency: selectedPrice.currency
+    }];
+
     updateCart();
     toast("Produto adicionado ao carrinho.");
   }
@@ -549,6 +579,23 @@
 
   $("#searchInput").addEventListener("input", renderProducts);
   $("#categoryFilter").addEventListener("change", renderProducts);
+
+  const currencyFilter = $("#currencyFilter");
+
+  if (currencyFilter) {
+    selectedCurrency = currencyFilter.value || "USD";
+
+    currencyFilter.addEventListener("change", () => {
+      selectedCurrency = currencyFilter.value;
+
+      // Limpa o carrinho para evitar usar a moeda anterior.
+      cart = [];
+      updateCart();
+      renderProducts();
+
+      toast(`Moeda alterada para ${selectedCurrency}.`);
+    });
+  }
 
   $("#menuToggle").onclick = () =>
     $("#mainNav").classList.toggle("open");
