@@ -72,7 +72,8 @@ export default async (request) => {
         body: JSON.stringify({
           email: normalizedEmail,
           offerId: normalizedOfferId,
-          currency: normalizedCurrency
+          currency: normalizedCurrency,
+          amount: normalizedAmount
         })
       }
     );
@@ -98,7 +99,10 @@ export default async (request) => {
       );
 
       return respond(
-        { error: "Não foi possível criar o pagamento na Lava.top" },
+        {
+          error: "Não foi possível criar o pagamento na Lava.top",
+          details: data
+        },
         502
       );
     }
