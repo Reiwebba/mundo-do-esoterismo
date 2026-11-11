@@ -8,6 +8,16 @@ export default async (request) => {
       }
     });
 
+  // Verificação do endereço no navegador
+  if (request.method === "GET") {
+    return respond({
+      success: true,
+      message: "Webhook Mundo do Esoterismo ativo.",
+      accepts: ["POST"]
+    });
+  }
+
+  // Aceitar apenas notificações POST
   if (request.method !== "POST") {
     return respond(
       { error: "Método não permitido" },
@@ -28,7 +38,7 @@ export default async (request) => {
     );
   }
 
-  // Verificar a chave secreta enviada pela Lava.top
+  // Validar autenticação
   const receivedKey = request.headers.get("X-Api-Key") || "";
 
   if (receivedKey !== secret) {
@@ -51,7 +61,7 @@ export default async (request) => {
 
   const eventType = event.eventType;
 
-  // Ignorar eventos que não sejam de pagamento
+  // Ignorar eventos não relacionados com pagamentos
   if (
     eventType !== "payment.success" &&
     eventType !== "payment.failed"
@@ -62,7 +72,6 @@ export default async (request) => {
     });
   }
 
-  // Identificar a fatura
   const invoiceId = event.contractId;
 
   if (!invoiceId) {
@@ -72,7 +81,7 @@ export default async (request) => {
     );
   }
 
-  // Utilizar os estados permitidos pelo Supabase
+  // Estados correspondentes ao Supabase
   const status =
     eventType === "payment.success"
       ? "pago"
@@ -116,11 +125,9 @@ export default async (request) => {
     const updated = await response.json();
 
     if (!updated.length) {
-      console.error("Fatura sem encomenda associada.");
-
       return respond(
         { error: "Encomenda não encontrada" },
-        500
+        404
       );
     }
 
