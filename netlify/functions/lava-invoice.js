@@ -153,7 +153,7 @@ export default async (request) => {
           product_name: normalizedProductName,
           total: normalizedAmount,
           currency: normalizedCurrency,
-          status: "pending"
+          status: "pendente"
         })
       }
     );
@@ -187,7 +187,7 @@ export default async (request) => {
     );
 
     return respond(
-      { error: "Erro interno ao processar o pagamento" },
+      { error: "Erro interno ao processar pagamento" },
       500
     );
   }
