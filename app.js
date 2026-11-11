@@ -1,3 +1,4 @@
+
 (() => {
   const cfg = window.APP_CONFIG || {};
   const $ = (s) => document.querySelector(s);
@@ -273,87 +274,22 @@
     $("#checkoutButton").onclick = checkout;
   }
 
-  async function checkout() {
+  // NOVO PROCESSO DE COMPRA:
+  // Encaminha o cliente diretamente para a página pública do produto na Lava.top.
+  function checkout() {
     if (!cart.length) return;
 
     const product = cart[0];
 
-    showModal(`
-      <h2>Finalizar compra</h2>
+    if (!product.id) {
+      toast("Não foi possível identificar o produto na Lava.top.");
+      return;
+    }
 
-      <p>${escapeHTML(product.name)}</p>
+    const productUrl =
+      `https://app.lava.top/products/${encodeURIComponent(product.id)}`;
 
-      <p><b>Preço: ${money(product.price, product.currency)}</b></p>
-
-      <form id="paymentForm">
-        <label>
-          O teu email
-          <input
-            class="form-control"
-            name="email"
-            type="email"
-            required
-            placeholder="teuemail@exemplo.com"
-          >
-        </label>
-
-        <button class="gold-button" type="submit">
-          Criar pagamento
-        </button>
-      </form>
-
-      <p>Depois da criação do pagamento, serás encaminhado para a página segura da Lava.top.</p>
-    `);
-
-    $("#paymentForm").onsubmit = async e => {
-      e.preventDefault();
-
-      const form = new FormData(e.target);
-      const email = String(form.get("email") || "").trim();
-
-      const button = e.target.querySelector("button[type='submit']");
-      button.disabled = true;
-      button.textContent = "A preparar pagamento...";
-
-      try {
-        const response = await fetch(
-          "/.netlify/functions/lava-invoice",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              email,
-              offerId: product.offerId,
-              currency: product.currency,
-              productName: product.name,
-              amount: product.price
-            })
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.paymentUrl) {
-          throw new Error(
-            data.error || "Não foi possível criar o pagamento."
-          );
-        }
-
-        cart = [];
-        updateCart();
-
-        window.location.href = data.paymentUrl;
-
-      } catch (error) {
-        console.error("Erro no pagamento:", error);
-        toast(error.message || "Erro ao iniciar o pagamento.");
-
-        button.disabled = false;
-        button.textContent = "Tentar novamente";
-      }
-    };
+    window.location.href = productUrl;
   }
 
   function openAccount() {
