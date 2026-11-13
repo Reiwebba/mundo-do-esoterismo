@@ -309,6 +309,58 @@
     };
   }
 
+  // Formulário para definir uma nova palavra-passe.
+  function passwordRecoveryForm() {
+    showModal(`
+      <h2>Redefinir palavra-passe</h2>
+      <p>Define uma nova palavra-passe para a tua conta.</p>
+      <form id="recoveryForm">
+        <label>Nova palavra-passe
+          <input class="form-control" name="password"
+            type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+        <label>Confirmar palavra-passe
+          <input class="form-control" name="confirmPassword"
+            type="password" minlength="8" autocomplete="new-password" required>
+        </label>
+        <button class="gold-button" type="submit">
+          Guardar nova palavra-passe
+        </button>
+      </form>
+    `);
+
+    $("#recoveryForm").onsubmit = async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const password = String(f.get("password") || "");
+      const confirmPassword = String(f.get("confirmPassword") || "");
+
+      if (password.length < 8) {
+        toast("Usa pelo menos 8 caracteres.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        toast("As palavras-passe não coincidem.");
+        return;
+      }
+
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+
+      const { error } = await supabaseClient.auth.updateUser({ password });
+
+      if (error) {
+        submitButton.disabled = false;
+        toast("Não foi possível alterar a palavra-passe: " + error.message);
+        return;
+      }
+
+      closeModal();
+      toast("Palavra-passe alterada com sucesso. Já podes entrar.");
+    };
+  }
+
   async function getAdminProfile() {
     if (!currentUser) return null;
 
@@ -615,8 +667,12 @@
       cfg.SUPABASE_PUBLISHABLE_KEY
     );
 
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
       currentUser = session?.user || null;
+
+      if (event === "PASSWORD_RECOVERY") {
+        passwordRecoveryForm();
+      }
     });
 
     supabaseClient.auth.getSession().then(({ data }) => {
