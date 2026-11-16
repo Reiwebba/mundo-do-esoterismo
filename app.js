@@ -662,21 +662,48 @@
   addAdminStyles();
 
   if (ready()) {
+    // Verifica se o link recebido é de recuperação de palavra-passe.
+    const recoveryParams = new URLSearchParams(
+      window.location.hash.replace(/^#/, "")
+    );
+
+    const recoveryLink =
+      recoveryParams.get("type") === "recovery";
+
+    let recoveryFormShown = false;
+
+    function openRecoveryForm() {
+      if (recoveryFormShown) return;
+      recoveryFormShown = true;
+      passwordRecoveryForm();
+    }
+
     supabaseClient = window.supabase.createClient(
       cfg.SUPABASE_URL,
       cfg.SUPABASE_PUBLISHABLE_KEY
     );
 
+    // O Supabase pode avisar que a recuperação foi iniciada.
     supabaseClient.auth.onAuthStateChange((event, session) => {
       currentUser = session?.user || null;
 
       if (event === "PASSWORD_RECOVERY") {
-        passwordRecoveryForm();
+        openRecoveryForm();
       }
     });
 
-    supabaseClient.auth.getSession().then(({ data }) => {
+    // Verifica também se a sessão de recuperação já foi criada.
+    supabaseClient.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error("Erro ao verificar sessão:", error);
+        return;
+      }
+
       currentUser = data.session?.user || null;
+
+      if (recoveryLink && data.session?.user) {
+        openRecoveryForm();
+      }
     });
   }
 
